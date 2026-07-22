@@ -1,24 +1,24 @@
-def process_match(standings, team1, team2, team1_goals, team2_goals):
-    """Updates both teams' stats after one match is played."""
+def process_match(standings, team1, team2, goals1, goals2):
 
-    
     standings[team1]["P"] += 1
     standings[team2]["P"] += 1
-  
-    standings[team1]["GF"] += team1_goals
-    standings[team1]["GA"] += team2_goals
-    standings[team2]["GF"] += team2_goals
-    standings[team2]["GA"] += team1_goals
 
-    # Decide win / draw / loss
-    if team1_goals > team2_goals:
+    standings[team1]["GF"] += goals1
+    standings[team1]["GA"] += goals2
+
+    standings[team2]["GF"] += goals2
+    standings[team2]["GA"] += goals1
+
+    if goals1 > goals2:
         standings[team1]["W"] += 1
-        standings[team1]["Pts"] += 3
         standings[team2]["L"] += 1
-    elif team2_goals > team1_goals:
+        standings[team1]["Pts"] += 3
+
+    elif goals2 > goals1:
         standings[team2]["W"] += 1
-        standings[team2]["Pts"] += 3
         standings[team1]["L"] += 1
+        standings[team2]["Pts"] += 3
+
     else:
         standings[team1]["D"] += 1
         standings[team2]["D"] += 1
@@ -29,72 +29,89 @@ def process_match(standings, team1, team2, team1_goals, team2_goals):
     standings[team2]["GD"] = standings[team2]["GF"] - standings[team2]["GA"]
 
 
-def get_score_input(team1, team2):
-    """Keeps asking the user for a score until they type a valid 'X-Y' format."""
-    while True:
-        raw = input(f"Enter score for {team1} vs {team2} (format: 2-0): ").strip()
-        parts = raw.split("-")
-
-    
-        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
-            return int(parts[0]), int(parts[1])
-
-        print("Invalid format. Please enter the score like this: 2-0")
-
-
-def format_gd(gd):
-    """Formats Goal Difference with a leading sign: +3, -4, or plain 0."""
-    if gd > 0:
-        return f"+{gd}"
-    elif gd < 0:
-        return str(gd)  
-    else:
-        return "0"
-
-
 def print_standings(standings):
-    """Prints the standings table sorted by Points, then GD, then GF."""
 
-    sorted_teams = sorted(
+    teams = sorted(
         standings.items(),
-        key=lambda item: (-item[1]["Pts"], -item[1]["GD"], -item[1]["GF"]),
+        key=lambda team: (
+            team[1]["Pts"],
+            team[1]["GD"],
+            team[1]["GF"]
+        ),
+        reverse=True
     )
 
-    header = f"{'Team':<6}{'P':<4}{'W':<4}{'D':<4}{'L':<4}{'GF':<5}{'GA':<5}{'GD':<5}{'Pts':<4}"
-    print(header)
+    print()
+    print(f"{'Team':<5} {'P':<3} {'W':<3} {'D':<3} {'L':<3} {'GF':<4} {'GA':<4} {'GD':<4} {'Pts':<4}")
 
-    for team_name, stats in sorted_teams:
-        row = (
-            f"{team_name:<6}{stats['P']:<4}{stats['W']:<4}{stats['D']:<4}"
-            f"{stats['L']:<4}{stats['GF']:<5}{stats['GA']:<5}"
-            f"{format_gd(stats['GD']):<5}{stats['Pts']:<4}"
+    for team, stats in teams:
+
+        if stats["GD"] > 0:
+            gd = "+" + str(stats["GD"])
+        elif stats["GD"] < 0:
+            gd = str(stats["GD"])
+        else:
+            gd = "0"
+
+        print(
+            f"{team:<5} "
+            f"{stats['P']:<3} "
+            f"{stats['W']:<3} "
+            f"{stats['D']:<3} "
+            f"{stats['L']:<3} "
+            f"{stats['GF']:<4} "
+            f"{stats['GA']:<4} "
+            f"{gd:<4} "
+            f"{stats['Pts']:<4}"
         )
-        print(row)
 
 
 def main():
-    teams = ["ARG", "MEX", "POL", "KSA"]
-    standings = {
-        team: {"P": 0, "W": 0, "D": 0, "L": 0, "GF": 0, "GA": 0, "GD": 0, "Pts": 0}
-        for team in teams
-    }
 
-    matchups = [
+    teams = ["ARG", "MEX", "POL", "KSA"]
+
+    standings = {}
+
+    for team in teams:
+        standings[team] = {
+            "P": 0,
+            "W": 0,
+            "D": 0,
+            "L": 0,
+            "GF": 0,
+            "GA": 0,
+            "GD": 0,
+            "Pts": 0
+        }
+
+    matches = [
         ("ARG", "MEX"),
         ("ARG", "POL"),
         ("ARG", "KSA"),
         ("MEX", "POL"),
         ("MEX", "KSA"),
-        ("POL", "KSA"),
+        ("POL", "KSA")
     ]
 
-    for team1, team2 in matchups:
-        goals1, goals2 = get_score_input(team1, team2)
+    for team1, team2 in matches:
+
+        while True:
+
+            score = input(f"Enter score for {team1} vs {team2} (format: 2-0): ")
+
+            try:
+                goals1, goals2 = score.split("-")
+                goals1 = int(goals1)
+                goals2 = int(goals2)
+                break
+
+            except ValueError:
+                print("Invalid input. Please enter the score in the format X-Y.")
+
         process_match(standings, team1, team2, goals1, goals2)
 
-    print()
     print_standings(standings)
 
 
-if __name__ == "__main__":
+if name == "main":
     main()
