@@ -113,5 +113,5 @@ def main():
     print_standings(standings)
 
 
-if name == "main":
+if __name__ == "__main__":
     main()
